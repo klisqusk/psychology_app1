@@ -9,7 +9,7 @@ def setup_page():
     )
 
 def load_styles():
-    # ===== СТИЛИ ДЛЯ КРАСОТЫ =====
+
     st.markdown("""
     <style>
         .main-header {

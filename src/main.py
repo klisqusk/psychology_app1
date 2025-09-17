@@ -28,7 +28,6 @@ def main():
 
         # Проверяем, завершен ли тест
         if 'current_question' not in st.session_state or st.session_state.current_question >= total_questions:
-            # ✅ ВЫБОР ФУНКЦИИ РЕЗУЛЬТАТОВ В ЗАВИСИМОСТИ ОТ ТЕСТА
             if test_key == "decision_style_test":
                 show_results1(theme_key, test_key)
             else:
@@ -39,3 +38,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+#для запуска программы выполнить в терминале в папке src команду: streamlit run main.py

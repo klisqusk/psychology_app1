@@ -24,7 +24,6 @@ def show_results(theme_key, test_key):
         </div>
     """, unsafe_allow_html=True)
 
-    # ===== НОВАЯ ШКАЛА =====
     st.markdown("### 📊 Визуализация результата")
 
     # Определяем цвета по диапазонам
@@ -91,7 +90,7 @@ def show_results(theme_key, test_key):
     with col3:
         st.markdown(f"<div style='text-align: center; color: #F44336;'>🔴 Высокий<br>({medium_end+1}-{max_possible})</div>", unsafe_allow_html=True)
 
-    # ===== Таблица ответов =====
+    # Таблица ответов
     st.write("### 📝 Ваши ответы:")
     results_df = pd.DataFrame({
         'Вопрос': [q['text'] for q in test['questions']],
@@ -146,7 +145,6 @@ def show_results1(theme_key, test_key):
             </div>
         """, unsafe_allow_html=True)
 
-        # ===== ВИЗУАЛИЗАЦИЯ: ГОРИЗОНТАЛЬНЫЕ ШКАЛЫ ПО КАЖДОМУ СТИЛЮ =====
         st.markdown("### 📊 Распределение стилей (баллы из 25)")
 
         for style_code, score in style_scores.items():
@@ -195,7 +193,6 @@ def show_results1(theme_key, test_key):
                 <p style="margin: 5px 0; font-weight: 500; color: white;">{label}</p>
             """, unsafe_allow_html=True)
 
-        # ===== ПОДРОБНАЯ ИНТЕРПРЕТАЦИЯ =====
         st.markdown("### 🔍 Подробная интерпретация")
 
         for style_code, score in style_scores.items():
@@ -208,7 +205,6 @@ def show_results1(theme_key, test_key):
                 """, unsafe_allow_html=True)
 
     else:
-        # Если нет стилей — показываем простой результат
         total_score = sum(st.session_state.scores)
         max_possible = total_questions * max(test["questions"][0]["scores"]) if test["questions"] else 0
 
@@ -231,7 +227,6 @@ def show_results1(theme_key, test_key):
             </div>
         """, unsafe_allow_html=True)
 
-        # ===== ШКАЛА =====
         percentage = min(100, (total_score / max_possible) * 100)
         st.markdown(f"""
             <div style="
@@ -266,7 +261,7 @@ def show_results1(theme_key, test_key):
             </div>
         """, unsafe_allow_html=True)
 
-    # ===== ТАБЛИЦА ОТВЕТОВ =====
+    # таблица ответов
     st.markdown("### 📝 Ваши ответы:")
     results_df = pd.DataFrame({
         'Вопрос': [q['text'] for q in test['questions']],
