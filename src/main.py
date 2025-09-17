@@ -28,7 +28,6 @@ def main():
 
         # Проверяем, завершен ли тест
         if 'current_question' not in st.session_state or st.session_state.current_question >= total_questions:
-            # ✅ ВЫБОР ФУНКЦИИ РЕЗУЛЬТАТОВ В ЗАВИСИМОСТИ ОТ ТЕСТА
             if test_key == "decision_style_test":
                 show_results1(theme_key, test_key)
             else:
