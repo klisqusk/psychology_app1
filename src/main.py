@@ -39,3 +39,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+#для запуска программы выполнить в терминале в папке src команду: streamlit run main.py
