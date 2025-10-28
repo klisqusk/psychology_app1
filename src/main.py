@@ -5,7 +5,7 @@ from themes import THEMES
 from menu import show_main_menu
 from tests import show_theme_tests
 from runner import run_test
-from results import show_results, show_results1
+from results import show_results_animation
 from config import setup_page, load_styles   # импортируем функции
 
 # Настройка страницы и стилей
@@ -27,11 +27,10 @@ def main():
         total_questions = len(test["questions"])
 
         # Проверяем, завершен ли тест
+        # Проверяем, завершен ли тест
         if 'current_question' not in st.session_state or st.session_state.current_question >= total_questions:
-            if test_key == "decision_style_test":
-                show_results1(theme_key, test_key)
-            else:
-                show_results(theme_key, test_key)
+            # Выводим результаты с анимацией для любого теста
+            show_results_animation(theme_key, test_key)
         else:
             run_test()
 

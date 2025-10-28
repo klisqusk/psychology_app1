@@ -1,275 +1,154 @@
 import streamlit as st
 from themes import THEMES
-import pandas as pd
+import random
+import base64
 
-def show_results(theme_key, test_key):
-    test = THEMES[theme_key]["tests"][test_key]
-    total_score = sum(st.session_state.scores)
-    max_possible = len(test["questions"]) * max(test["questions"][0]["scores"])  # Максимальный балл
-
-    # Находим интерпретацию
-    result = None
-    for score_range, interpretation in test["interpretation"].items():
-        if score_range[0] <= total_score <= score_range[1]:
-            result = interpretation
-            break
-
-    # Показываем красивые результаты
-    st.balloons()
-    st.markdown(f"""
-        <div class="result-box">
-            <h2>{result['emoji']} Ваш результат: {total_score} из {max_possible} баллов</h2>
-            <h3>{result['level']}</h3>
-            <p>{result['advice']}</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("### 📊 Визуализация результата")
-
-    # Определяем цвета по диапазонам
-    if max_possible == 16:  # Для теста на делегирование
-        low_end = 3
-        medium_end = 7
-    else:
-        # Автоматически определяем границы на основе интерпретаций
-        ranges = list(test["interpretation"].keys())
-        low_end = ranges[0][1]  # Верхняя граница первого диапазона
-        medium_end = ranges[1][1]  # Верхняя граница второго
-
-    # Рассчитываем процент
-    percentage = min(100, (total_score / max_possible) * 100)
-
-    # Цветовая шкала: зелёный → жёлтый → красный
-    if percentage <= (low_end / max_possible) * 100:
-        color = "#4CAF50"  # Зелёный
-    elif percentage <= (medium_end / max_possible) * 100:
-        color = "#FFC107"  # Жёлтый
-    else:
-        color = "#F44336"  # Красный
-
-    # Создаём HTML-шкалу
-    st.markdown(f"""
-        <div style="
-            background-color: #e0e0e0;
-            height: 30px;
-            border-radius: 15px;
-            position: relative;
-            margin: 20px 0;
-            overflow: hidden;
-            width: 100%;
-        ">
-            <div style="
-                background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
-                height: 100%;
-                width: {percentage}%;
-                border-radius: 15px;
-                transition: width 1s ease-in-out;
-            "></div>
-            <div style="
-                position: absolute;
-                top: 50%;
-                left: {percentage}%;
-                transform: translateX(-50%) translateY(-50%);
-                color: white;
-                font-weight: bold;
-                font-size: 14px;
-                text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-                padding: 0 8px;
-                background: rgba(0,0,0,0.3);
-                border-radius: 15px;
-            ">{total_score}/{max_possible}</div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Подпись под шкалой
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(f"<div style='text-align: center; color: #4CAF50;'>🔹 Низкий<br>({0}-{low_end})</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"<div style='text-align: center; color: #FFC107;'>🟡 Средний<br>({low_end+1}-{medium_end})</div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"<div style='text-align: center; color: #F44336;'>🔴 Высокий<br>({medium_end+1}-{max_possible})</div>", unsafe_allow_html=True)
-
-    # Таблица ответов
-    st.write("### 📝 Ваши ответы:")
-    results_df = pd.DataFrame({
-        'Вопрос': [q['text'] for q in test['questions']],
-        'Ответ': st.session_state.answers,
-        'Баллы': st.session_state.scores
-    })
-    st.dataframe(results_df, use_container_width=True)
-
-    if st.button("🔄 Выбрать другой тест"):
-        for key in ['current_theme', 'current_test', 'current_question', 'answers', 'scores']:
-            if key in st.session_state:
-                del st.session_state[key]
-        st.rerun()
-
-def show_results1(theme_key, test_key):
+def show_results_animation(theme_key, test_key):
     test = THEMES[theme_key]["tests"][test_key]
     total_questions = len(test["questions"])
 
-    # Считаем баллы по стилям — только если есть поле "style"
-    style_scores = {"R": 0, "I": 0, "A": 0, "D": 0, "S": 0}
-    has_style = False
+    # === Plane image ===
+    plane_path = "assets/plane.png"
+    with open(plane_path, "rb") as f:
+        plane_base64 = base64.b64encode(f.read()).decode()
 
-    for i in range(total_questions):
-        score = st.session_state.scores[i]
-        question = test["questions"][i]
-        if "style" in question:
-            style = question["style"]
-            if style in style_scores:
-                style_scores[style] += score
-            else:
-                print(f"Неизвестный стиль: {style}")
-        has_style = True  # Если хотя бы один вопрос имеет style — значит, это тест со стилями
+    # === Box image ===
+    box_path = "assets/box.png"
+    with open(box_path, "rb") as f:
+        box_base64 = base64.b64encode(f.read()).decode()
 
-    # Находим доминирующий стиль
-    if has_style:
+    # === Результаты ===
+    if test_key == "decision_style_test":
+        style_scores = {"R": 0, "I": 0, "A": 0, "D": 0, "S": 0}
+        for i, q in enumerate(test["questions"]):
+            score = st.session_state.scores[i]
+            if "style" in q and q["style"] in style_scores:
+                style_scores[q["style"]] += score
         dominant_style = max(style_scores, key=style_scores.get)
-        max_score = style_scores[dominant_style]
-        total_possible = 25  # Фиксировано: 25 вопросов × 1 балл максимум
-        avg_score = sum(style_scores.values()) / len(style_scores)
-
-        # Получаем описание доминирующего стиля
-        style_name = test.get("style_labels", {}).get(dominant_style, "Неизвестный стиль")
-        style_desc = test.get("style_descriptions", {}).get(dominant_style, "Описание отсутствует")
-
-        # Показываем результаты
-        st.balloons()
-        st.markdown(f"""
-            <div class="result-box">
-                <h2>🎯 Ваш доминирующий стиль принятия решений</h2>
-                <h3>{style_name} ({max_score}/{total_possible})</h3>
-                <p><em>"{style_desc}"</em></p>
-            </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("### 📊 Распределение стилей (баллы из 25)")
-
-        for style_code, score in style_scores.items():
-            label = test.get("style_labels", {}).get(style_code, style_code)
-            percentage = min(100, (score / total_possible) * 100)
-
-            # Цветовая шкала: 0–8 = красный, 9–16 = жёлтый, 17–25 = зелёный
-            if percentage <= 32:   # ≤ 8 баллов
-                color = "#F44336"  # Красный
-            elif percentage <= 64: # ≤ 16 баллов
-                color = "#FFC107"  # Жёлтый
-            else:                  # >16 баллов
-                color = "#4CAF50"  # Зелёный
-
-            # Создаём HTML-шкалу
-            st.markdown(f"""
-                <div style="
-                    background-color: #e0e0e0;
-                    height: 20px;
-                    border-radius: 10px;
-                    margin: 10px 0;
-                    position: relative;
-                    width: 100%;
-                ">
-                    <div style="
-                        background: {color};
-                        height: 100%;
-                        width: {percentage}%;
-                        border-radius: 10px;
-                        transition: width 1s ease-in-out;
-                    "></div>
-                    <div style="
-                        position: absolute;
-                        top: 50%;
-                        left: {percentage}%;
-                        transform: translateX(-50%) translateY(-50%);
-                        color: white;
-                        font-weight: bold;
-                        font-size: 14px;
-                        text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-                        padding: 0 8px;
-                        background: rgba(0,0,0,0.3);
-                        border-radius: 15px;
-                    ">{score}/{total_possible}</div>
-                </div>
-                <p style="margin: 5px 0; font-weight: 500; color: white;">{label}</p>
-            """, unsafe_allow_html=True)
-
-        st.markdown("### 🔍 Подробная интерпретация")
-
-        for style_code, score in style_scores.items():
-            label = test.get("style_labels", {}).get(style_code, style_code)
-            description = test.get("style_descriptions", {}).get(style_code, "Описание отсутствует")
-            is_dominant = "✅ **ДОМИНИРУЮЩИЙ**" if style_code == dominant_style else ""
-            st.markdown(f"""
-                **{label}** — {score}/25<br>
-                _"{description}"_ {is_dominant}
-                """, unsafe_allow_html=True)
-
+        result_text = f"🎯 Ваш доминирующий стиль: {test.get('style_labels', {}).get(dominant_style, dominant_style)} ({style_scores[dominant_style]}/25)"
     else:
         total_score = sum(st.session_state.scores)
         max_possible = total_questions * max(test["questions"][0]["scores"]) if test["questions"] else 0
+        result_text = f"🎉 Ваш результат: {total_score} из {max_possible} баллов"
 
-        # Найди интерпретацию
-        result = None
-        for score_range, interpretation in test["interpretation"].items():
-            if score_range[0] <= total_score <= score_range[1]:
-                result = interpretation
-                break
+    html_animation = f"""
+    <style>
+    .sky {{
+        position: relative;
+        height: 700px;
+        width: 100%;
+        background: linear-gradient(to bottom, #87CEEB, #c2e9fb);
+        overflow: hidden;
+        border-radius: 20px;
+        margin-bottom: 30px;
+    }}
+    .plane {{
+        position: absolute;
+        top: 100px;
+        left: -250px;
+        width: 250px;
+        transition: left 5s linear;
+        z-index: 10;
+    }}
+    .box {{
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        cursor: pointer;
+        display: none;
+        z-index: 5;
+        transition: top 5s ease;
+    }}
+    .cloud {{
+        position: absolute;
+        opacity: 0.8;
+        animation: moveClouds linear infinite;
+    }}
+    @keyframes moveClouds {{
+        0% {{ transform: translateX(0); }}
+        100% {{ transform: translateX(100vw); }}
+    }}
+    .ground {{
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 150px;
+        background: linear-gradient(to top, #2E8B57, #3CB371);
+        z-index: 1;
+    }}
+    .result-box {{
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 320px;
+        background: rgba(255,255,255,0.95);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        font-weight: bold;
+        box-shadow: 0 0 15px rgba(0,0,0,0.3);
+        animation: fadeIn 1s ease forwards;
+    }}
+    @keyframes fadeIn {{
+        0% {{ opacity: 0; transform: translate(-50%, -100%); }}
+        100% {{ opacity: 1; transform: translate(-50%, -50%); }}
+    }}
+    </style>
 
-        if not result:
-            result = {"level": "Не определено", "emoji": "❓", "advice": "Результат не интерпретируется."}
+    <div class="sky">
+        <img src="data:image/png;base64,{plane_base64}" class="plane" id="plane">
+        <img src="data:image/png;base64,{box_base64}" class="box" id="dropBox">
 
-        st.balloons()
-        st.markdown(f"""
-            <div class="result-box">
-                <h2>{result['emoji']} Ваш результат: {total_score} из {max_possible} баллов</h2>
-                <h3>{result['level']}</h3>
-                <p>{result['advice']}</p>
-            </div>
-        """, unsafe_allow_html=True)
+        <!-- Облака сразу на экране с рандомной стартовой позицией -->
+        <img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top: 50px; width:150px; left:{random.randint(0, 800)}px; animation-duration: 60s;">
+        <img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top: 150px; width:200px; left:{random.randint(0, 800)}px; animation-duration: 80s;">
+        <img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top: 250px; width:180px; left:{random.randint(0, 800)}px; animation-duration: 100s;">
 
-        percentage = min(100, (total_score / max_possible) * 100)
-        st.markdown(f"""
-            <div style="
-                background-color: #e0e0e0;
-                height: 30px;
-                border-radius: 15px;
-                position: relative;
-                margin: 20px 0;
-                overflow: hidden;
-                width: 100%;
-            ">
-                <div style="
-                    background: linear-gradient(90deg, #4CAF50, #FFC107, #F44336);
-                    height: 100%;
-                    width: {percentage}%;
-                    border-radius: 15px;
-                    transition: width 1s ease-in-out;
-                "></div>
-                <div style="
-                    position: absolute;
-                    top: 50%;
-                    left: {percentage}%;
-                    transform: translateX(-50%) translateY(-50%);
-                    color: white;
-                    font-weight: bold;
-                    font-size: 14px;
-                    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-                    padding: 0 8px;
-                    background: rgba(0,0,0,0.3);
-                    border-radius: 15px;
-                ">{total_score}/{max_possible}</div>
-            </div>
-        """, unsafe_allow_html=True)
+        <div class="ground"></div>
 
-    # таблица ответов
-    st.markdown("### 📝 Ваши ответы:")
-    results_df = pd.DataFrame({
-        'Вопрос': [q['text'] for q in test['questions']],
-        'Ответ': st.session_state.answers,
-        'Баллы': st.session_state.scores,
-        'Стиль': [q.get('style', '—') for q in test['questions']]  # Безопасно получаем style
-    })
-    st.dataframe(results_df, use_container_width=True)
+        <div id="resultContainer" class="result-box">
+            <h2>{result_text}</h2>
+        </div>
+    </div>
+
+    <script>
+    const plane = document.getElementById('plane');
+    const box = document.getElementById('dropBox');
+    const result = document.getElementById('resultContainer');
+
+    // Запуск самолета
+    setTimeout(() => {{
+        plane.style.left = "100%";
+    }}, 100);
+
+    // Коробка падает из самолета при пролете по центру
+    let checkInterval = setInterval(() => {{
+        const planeRect = plane.getBoundingClientRect();
+        const skyRect = plane.parentElement.getBoundingClientRect();
+        const planeCenter = planeRect.left + planeRect.width / 2;
+        const skyCenter = skyRect.left + skyRect.width / 2;
+
+        if (planeCenter >= skyCenter - 10 && planeCenter <= skyCenter + 10) {{
+            box.style.display = 'block';
+            box.style.top = planeRect.top + "px";
+            box.style.left = planeRect.left + planeRect.width/2 - box.width/2 + "px";
+            box.style.transition = "top 5s ease";  // плавное падение
+            box.style.top = planeRect.top + 400 + "px";  // высота падения
+            clearInterval(checkInterval);
+        }}
+    }}, 50);
+
+    // Клик по коробке — показываем результат
+    box.onclick = () => {{
+        box.style.display = 'none';
+        result.style.display = 'block';
+    }};
+    </script>
+    """
+
+    st.components.v1.html(html_animation, height=750)
 
     if st.button("🔄 Выбрать другой тест"):
         for key in ['current_theme', 'current_test', 'current_question', 'answers', 'scores']:
