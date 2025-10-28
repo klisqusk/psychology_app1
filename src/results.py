@@ -25,12 +25,23 @@ def show_results_animation(theme_key, test_key):
             if "style" in q and q["style"] in style_scores:
                 style_scores[q["style"]] += score
         dominant_style = max(style_scores, key=style_scores.get)
-        result_text = f"🎯 Ваш доминирующий стиль: {test.get('style_labels', {}).get(dominant_style, dominant_style)} ({style_scores[dominant_style]}/25)"
+        style_label = test.get('style_labels', {}).get(dominant_style, dominant_style)
+        style_description = test.get('style_descriptions', {}).get(dominant_style, '')
+        result_text = f"🎯 Ваш стиль принятия решений: {style_label}\n\n{style_description}"
     else:
         total_score = sum(st.session_state.scores)
-        max_possible = total_questions * max(test["questions"][0]["scores"]) if test["questions"] else 0
-        result_text = f"🎉 Ваш результат: {total_score} из {max_possible} баллов"
 
+        # Поиск подходящей интерпретации
+        interpretation = "Результат теста обрабатывается..."
+        if "interpretations" in test and "ranges" in test["interpretations"]:
+            for range_info in test["interpretations"]["ranges"]:
+                if range_info["min"] <= total_score <= range_info["max"]:
+                    interpretation = range_info["text"]
+                    break
+
+        result_text = f"{interpretation}"
+
+    # === HTML анимация (остальной код остается без изменений) ===
     html_animation = f"""
     <style>
     .sky {{
@@ -100,14 +111,10 @@ def show_results_animation(theme_key, test_key):
     <div class="sky">
         <img src="data:image/png;base64,{plane_base64}" class="plane" id="plane">
         <img src="data:image/png;base64,{box_base64}" class="box" id="dropBox">
-
-        <!-- Облака сразу на экране с рандомной стартовой позицией -->
         <img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top: 50px; width:150px; left:{random.randint(0, 800)}px; animation-duration: 60s;">
         <img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top: 150px; width:200px; left:{random.randint(0, 800)}px; animation-duration: 80s;">
         <img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top: 250px; width:180px; left:{random.randint(0, 800)}px; animation-duration: 100s;">
-
         <div class="ground"></div>
-
         <div id="resultContainer" class="result-box">
             <h2>{result_text}</h2>
         </div>
@@ -118,12 +125,10 @@ def show_results_animation(theme_key, test_key):
     const box = document.getElementById('dropBox');
     const result = document.getElementById('resultContainer');
 
-    // Запуск самолета
     setTimeout(() => {{
         plane.style.left = "100%";
     }}, 100);
 
-    // Коробка падает из самолета при пролете по центру
     let checkInterval = setInterval(() => {{
         const planeRect = plane.getBoundingClientRect();
         const skyRect = plane.parentElement.getBoundingClientRect();
@@ -134,13 +139,12 @@ def show_results_animation(theme_key, test_key):
             box.style.display = 'block';
             box.style.top = planeRect.top + "px";
             box.style.left = planeRect.left + planeRect.width/2 - box.width/2 + "px";
-            box.style.transition = "top 5s ease";  // плавное падение
-            box.style.top = planeRect.top + 400 + "px";  // высота падения
+            box.style.transition = "top 5s ease";
+            box.style.top = planeRect.top + 400 + "px";
             clearInterval(checkInterval);
         }}
     }}, 50);
 
-    // Клик по коробке — показываем результат
     box.onclick = () => {{
         box.style.display = 'none';
         result.style.display = 'block';
