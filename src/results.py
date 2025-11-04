@@ -16,7 +16,7 @@ def show_results_animation(theme_key, test_key):
     box_path = "assets/box.png"
     with open(box_path, "rb") as f:
         box_base64 = base64.b64encode(f.read()).decode()
-
+#check
     # === Результаты ===
     if test_key == "decision_style_test":
         style_scores = {"R": 0, "I": 0, "A": 0, "D": 0, "S": 0}
