@@ -27,7 +27,6 @@ def main():
         total_questions = len(test["questions"])
 
         # Проверяем, завершен ли тест
-        # Проверяем, завершен ли тест
         if 'current_question' not in st.session_state or st.session_state.current_question >= total_questions:
             # Выводим результаты с анимацией для любого теста
             show_results_animation(theme_key, test_key)
