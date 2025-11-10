@@ -2,7 +2,7 @@ import streamlit as st
 import base64
 import random
 from themes import THEMES
-
+import streamlit.components.v1 as components
 
 def show_results_animation(theme_key, test_key):
     test = THEMES[theme_key]["tests"][test_key]
@@ -29,16 +29,16 @@ def show_results_animation(theme_key, test_key):
     else:
         total_score = sum(st.session_state.scores)
         max_possible = total_questions * max(test["questions"][0]["scores"]) if test["questions"] else 0
-        score_text = f"🎉 Ваш результат: {total_score} из {max_possible} баллов"
+        score_text = f"✨ Ваш результат: {total_score} из {max_possible} баллов"
         description = test.get("result_description", "Описание результата отсутствует.")
 
-    # === HTML ===
+    # === HTML + CSS + JS ===
     html_animation = f"""
     <style>
     .sky {{
         position: relative;
         height: 700px;
-        background: linear-gradient(to bottom, #87CEEB, #c2e9fb);
+        background: linear-gradient(to bottom, #87CEEB, #e0c3fc);
         overflow: hidden;
         border-radius: 20px;
         margin-bottom: 30px;
@@ -77,24 +77,46 @@ def show_results_animation(theme_key, test_key):
         background: linear-gradient(to top, #2E8B57, #3CB371);
         z-index: 1;
     }}
-    /* === Книга === */
+    .particles {{
+        position: absolute;
+        display: none;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        pointer-events: none;
+        z-index: 15;
+    }}
+    .particle {{
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: rgba(255, 255, 200, 0.9);
+        border-radius: 50%;
+        animation: floatUp 2s ease-out forwards;
+    }}
+    @keyframes floatUp {{
+        0% {{ transform: translateY(0) scale(1); opacity: 1; }}
+        100% {{ transform: translateY(-200px) scale(0.2); opacity: 0; }}
+    }}
     .book {{
         display: none;
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 420px;
-        height: 260px;
-        perspective: 1500px;
-        z-index: 15;
+        width: 500px;
+        height: 320px;
+        perspective: 1800px;
+        z-index: 20;
     }}
     .book-inner {{
         position: relative;
         width: 100%;
         height: 100%;
         transform-style: preserve-3d;
-        transition: transform 1s ease;
+        transition: transform 1.2s cubic-bezier(0.4, 0.2, 0.2, 1);
     }}
     .book.flipped .book-inner {{
         transform: rotateY(180deg);
@@ -104,39 +126,44 @@ def show_results_animation(theme_key, test_key):
         width: 100%;
         height: 100%;
         backface-visibility: hidden;
-        border-radius: 15px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        border-radius: 18px;
+        box-shadow: 0 0 35px rgba(0, 0, 0, 0.4);
         overflow: hidden;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 25px;
+        padding: 35px;
         box-sizing: border-box;
+        font-family: 'Georgia', serif;
         font-size: 18px;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        color: #3b2a1a;
     }}
     .page.front {{
-        background: #ffffff;
+        background: radial-gradient(circle at 30% 30%, #5c4033, #3a2a22 90%);
+        color: #f3e9d2;
+        text-align: center;
     }}
     .page.back {{
-        background: #fff8e6;
+        background: linear-gradient(to bottom right, #fff8e6, #f6e9c9);
         transform: rotateY(180deg);
+        border: 1px solid #d9c29c;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
     }}
     .flip-btn {{
-        margin-top: 20px;
-        background: #4caf50;
-        color: white;
+        margin-top: 15px;
+        background: linear-gradient(to bottom, #d4a373, #b07b4e);
+        color: #fff;
         border: none;
         border-radius: 10px;
-        padding: 8px 20px;
+        padding: 10px 25px;
         cursor: pointer;
         font-weight: bold;
-        transition: 0.3s;
+        transition: all 0.3s ease;
     }}
     .flip-btn:hover {{
-        background: #45a049;
+        background: linear-gradient(to bottom, #e0b182, #c89263);
+        transform: scale(1.05);
     }}
     </style>
 
@@ -144,27 +171,27 @@ def show_results_animation(theme_key, test_key):
         <img src="data:image/png;base64,{plane_base64}" class="plane" id="plane">
         <img src="data:image/png;base64,{box_base64}" class="box" id="dropBox">
 
-        <!-- Облака -->
         {"".join([
-        f'<img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top:{y}px; left:{x}px; width:{w}px; animation-duration:{d}s;">'
-        for (y, x, w, d) in [
-            (50, random.randint(0, 800), 150, 80),
-            (150, random.randint(0, 800), 200, 100),
-            (250, random.randint(0, 800), 180, 120)
-        ]
-    ])}
+            f'<img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top:{y}px; left:{x}px; width:{w}px; animation-duration:{d}s;">'
+            for (y, x, w, d) in [
+                (50, random.randint(0, 800), 150, 80),
+                (150, random.randint(0, 800), 200, 100),
+                (250, random.randint(0, 800), 180, 120)
+            ]
+        ])}
 
         <div class="ground"></div>
+        <div id="particles" class="particles"></div>
 
         <div id="book" class="book">
             <div class="book-inner">
                 <div class="page front">
                     <h2>{score_text}</h2>
-                    <button class="flip-btn" onclick="flipPage()">Перевернуть страницу 📖</button>
+                    <button class="flip-btn" onclick="flipPage()">Перевернуть 📖</button>
                 </div>
                 <div class="page back">
                     <h3>🪶 Объяснение результата</h3>
-                    <p style="font-size:16px; line-height:1.4;">{description}</p>
+                    <p>{description}</p>
                     <button class="flip-btn" onclick="flipPage()">⬅ Назад</button>
                 </div>
             </div>
@@ -175,11 +202,9 @@ def show_results_animation(theme_key, test_key):
     const plane = document.getElementById('plane');
     const box = document.getElementById('dropBox');
     const book = document.getElementById('book');
-    const bookInner = book.querySelector('.book-inner');
+    const particles = document.getElementById('particles');
 
-    setTimeout(() => {{
-        plane.style.left = "100%";
-    }}, 100);
+    setTimeout(() => {{ plane.style.left = "100%"; }}, 100);
 
     let checkInterval = setInterval(() => {{
         const planeRect = plane.getBoundingClientRect();
@@ -191,17 +216,37 @@ def show_results_animation(theme_key, test_key):
             box.style.display = 'block';
             box.style.left = (planeRect.left + planeRect.width / 2 - 80) + 'px';
             box.style.top = planeRect.top + 'px';
-            setTimeout(() => {{
-                box.style.top = '520px';
-            }}, 100);
+            setTimeout(() => {{ box.style.top = '520px'; }}, 100);
             clearInterval(checkInterval);
         }}
     }}, 50);
 
     box.onclick = () => {{
-        box.style.display = 'none';
-        book.style.display = 'block';
+        box.style.transition = 'opacity 0.5s';
+        box.style.opacity = 0;
+        setTimeout(() => {{
+            box.style.display = 'none';
+            spawnParticles();
+            setTimeout(() => {{
+                book.style.display = 'block';
+                book.classList.add('showing');
+            }}, 1500);
+        }}, 500);
     }};
+
+    function spawnParticles() {{
+        particles.style.display = 'block';
+        const skyRect = document.querySelector('.sky').getBoundingClientRect();
+        for (let i = 0; i < 40; i++) {{
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * skyRect.width + 'px';
+            p.style.top = Math.random() * skyRect.height + 'px';
+            p.style.animationDelay = (Math.random() * 0.5) + 's';
+            particles.appendChild(p);
+            setTimeout(() => p.remove(), 2000);
+        }}
+    }}
 
     function flipPage() {{
         book.classList.toggle('flipped');
@@ -209,9 +254,10 @@ def show_results_animation(theme_key, test_key):
     </script>
     """
 
-    st.components.v1.html(html_animation, height=750)
+    components.html(html_animation, height=750, scrolling=False)
 
-    if st.button("🔄 Выбрать другой тест"):
+    # Кнопка "Главное меню" вне карточки
+    if st.button("🏠 Главное меню"):
         for key in ['current_theme', 'current_test', 'current_question', 'answers', 'scores']:
             st.session_state.pop(key, None)
-        st.rerun()
+        st.session_state['show_main_menu'] = True
