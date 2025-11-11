@@ -3,7 +3,8 @@ import base64
 import random
 from themes import THEMES
 import streamlit.components.v1 as components
-#sgmdfklgndfklg
+
+
 def show_results_animation(theme_key, test_key):
     test = THEMES[theme_key]["tests"][test_key]
     total_questions = len(test["questions"])
@@ -18,6 +19,7 @@ def show_results_animation(theme_key, test_key):
 
     # === Результаты ===
     if test_key == "decision_style_test":
+        # Обработка теста на стили принятия решений
         style_scores = {"R": 0, "I": 0, "A": 0, "D": 0, "S": 0}
         for i, q in enumerate(test["questions"]):
             score = st.session_state.scores[i]
@@ -26,13 +28,43 @@ def show_results_animation(theme_key, test_key):
         dominant_style = max(style_scores, key=style_scores.get)
         score_text = f"🎯 Ваш стиль: {test.get('style_labels', {}).get(dominant_style, dominant_style)} ({style_scores[dominant_style]}/25)"
         description = test.get("style_descriptions", {}).get(dominant_style, "Описание отсутствует.")
+
+    elif "interpretations" in test and "ranges" in test["interpretations"]:
+        # Обработка теста делегирования с диапазонами
+        total_score = sum(st.session_state.scores)
+        max_possible = total_questions * max(test["questions"][0]["scores"]) if test["questions"] else 0
+        score_text = f"✨ Ваш результат: {total_score} из {max_possible} баллов"
+
+        # Поиск подходящего диапазона
+        description = "Описание результата отсутствует."
+        for range_info in test["interpretations"]["ranges"]:
+            if range_info["min"] <= total_score <= range_info["max"]:
+                description = range_info["text"]
+                break
+
+    elif "interpretation" in test and test["interpretation"]:
+        # Обработка тестов с интерпретацией в виде словаря
+        total_score = sum(st.session_state.scores)
+        max_possible = total_questions * max(test["questions"][0]["scores"]) if test["questions"] else 0
+        score_text = f"✨ Ваш результат: {total_score} из {max_possible} баллов"
+
+        # Поиск в интерпретации
+        description = "Описание результата отсутствует."
+        for (min_score, max_score), result_info in test["interpretation"].items():
+            if min_score <= total_score <= max_score:
+                description = f"{result_info['emoji']} {result_info['level']}\n\n{result_info['advice']}"
+                break
+
     else:
+        # Общий случай для остальных тестов
         total_score = sum(st.session_state.scores)
         max_possible = total_questions * max(test["questions"][0]["scores"]) if test["questions"] else 0
         score_text = f"✨ Ваш результат: {total_score} из {max_possible} баллов"
         description = test.get("result_description", "Описание результата отсутствует.")
 
-    # === HTML + CSS + JS ===
+    # === ОСТАЛЬНАЯ ЧАСТЬ ФУНКЦИИ ОСТАЕТСЯ БЕЗ ИЗМЕНЕНИЙ ===
+    # (HTML, CSS, JS код)
+
     html_animation = f"""
     <style>
     .sky {{
@@ -172,13 +204,13 @@ def show_results_animation(theme_key, test_key):
         <img src="data:image/png;base64,{box_base64}" class="box" id="dropBox">
 
         {"".join([
-            f'<img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top:{y}px; left:{x}px; width:{w}px; animation-duration:{d}s;">'
-            for (y, x, w, d) in [
-                (50, random.randint(0, 800), 150, 80),
-                (150, random.randint(0, 800), 200, 100),
-                (250, random.randint(0, 800), 180, 120)
-            ]
-        ])}
+        f'<img src="https://cdn-icons-png.flaticon.com/512/414/414927.png" class="cloud" style="top:{y}px; left:{x}px; width:{w}px; animation-duration:{d}s;">'
+        for (y, x, w, d) in [
+            (50, random.randint(0, 800), 150, 80),
+            (150, random.randint(0, 800), 200, 100),
+            (250, random.randint(0, 800), 180, 120)
+        ]
+    ])}
 
         <div class="ground"></div>
         <div id="particles" class="particles"></div>
