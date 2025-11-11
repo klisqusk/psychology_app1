@@ -9,7 +9,6 @@ def setup_page():
     )
 
 def load_styles():
-
     st.markdown("""
     <style>
         .main-header {
@@ -32,56 +31,31 @@ def load_styles():
         .theme-card:hover {
             transform: translateY(-8px);
         }
-    .test-card {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
-        color: white;
-        margin: 1rem 0;
-        transition: transform 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        height: 220px; /* 👈 ФИКСИРОВАННАЯ ВЫСОТА */
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between; /* Кнопка внизу, заголовок и описание сверху */
-        overflow: hidden; /* Чтобы ничего не вылезало */
-    }
-
-    .test-card h4 {
-        margin: 0 0 0.5rem 0;
-        font-size: 1.2rem;
-        font-weight: bold;
-        line-height: 1.3;
-    }
-
-    .test-card p {
-        margin: 0;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        flex-grow: 1; /* Занимает всё свободное пространство между заголовком и кнопкой */
-        overflow-y: auto; /* 👈 ВКЛЮЧАЕМ СКРОЛЛ ПРИ ПЕРЕПОЛНЕНИИ */
-        padding-right: 5px; /* Чтобы скролл не мешал тексту */
-        scrollbar-width: thin; /* Для Firefox */
-        scrollbar-color: rgba(255,255,255,0.5) transparent; /* Цвет скролла */
-    }
-
-    .test-card p::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .test-card p::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .test-card p::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.4);
-        border-radius: 3px;
-    }
-
-    .test-card button {
-        margin-top: 1rem;
-        width: 100%;
-    }
+        .test-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            color: white;
+            margin: 1rem 0;
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+        .test-card h4 {
+            margin: 0 0 0.5rem 0; font-size: 1.2rem; font-weight: bold; line-height: 1.3;
+        }
+        .test-card p {
+            margin: 0; font-size: 0.95rem; line-height: 1.5; flex-grow: 1; overflow-y: auto; padding-right: 5px;
+            scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.5) transparent;
+        }
+        .test-card p::-webkit-scrollbar { width: 6px; }
+        .test-card p::-webkit-scrollbar-track { background: transparent; }
+        .test-card p::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 3px; }
+        .test-card button { margin-top: 1rem; width: 100%; }
         .stButton>button {
             background: linear-gradient(45deg, #FF4B4B, #FF6B6B);
             color: white;
