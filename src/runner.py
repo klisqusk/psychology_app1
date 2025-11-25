@@ -9,6 +9,20 @@ def run_test():
     total_questions = len(test["questions"])
     current_q = st.session_state.current_question
 
+    # ⚙️ Тот же светло-бежевый фон и тёмно-серый текст на странице вопросов
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: #F7F3ED;
+        }
+
+        h1, h2, h3, h4, p {
+            color: #333333;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+
     if current_q < 0:
         st.session_state.current_question = 0
         st.rerun()

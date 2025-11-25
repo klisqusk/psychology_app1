@@ -6,6 +6,20 @@ def show_theme_tests():
     theme_key = st.session_state.current_theme
     theme = THEMES[theme_key]
 
+    # ⚙️ Светло-бежевый фон и тёмно-серый текст на страницах с тестами
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: #F7F3ED; /* очень светлый бежевый */
+        }
+
+        /* Основные надписи на страницах тестов */
+        h1, h2, h3, h4, p {
+            color: #333333;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.title(theme["name"])
     st.subheader(theme["description"])
     st.markdown("---")

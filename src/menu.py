@@ -3,6 +3,22 @@ from themes import THEMES
 
 
 def show_main_menu():
+    # ⚙️ Стили только для главной страницы
+    st.markdown("""
+        <style>
+        /* Заголовок PsychoTest Pro тёмно-серый */
+        .main-header {
+            color: #333333 !important;
+        }
+
+        /* Заголовки и описания карточек тем тоже тёмно-серые */
+        .theme-card h3,
+        .theme-card p {
+            color: #333333 !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown('<h1 class="main-header">🧠 PsychoTest Pro</h1>', unsafe_allow_html=True)
     st.write("Выберите тему для прохождения теста:")
 
